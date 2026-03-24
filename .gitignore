@@ -3,3 +3,6 @@ venv*
 .idea
 .pybuilder
 target
+__pycache__/
+*.pyc
+*.pyo
