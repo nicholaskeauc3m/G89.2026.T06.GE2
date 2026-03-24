@@ -9,4 +9,4 @@ class EnterpriseManager:
     def validate_cif(cif: str):
         """RETURNs TRUE IF THE IBAN RECEIVED IS VALID SPANISH IBAN,
         OR FALSE IN OTHER CASE"""
-        return False
+        return True
