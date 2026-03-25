@@ -34,6 +34,7 @@ class EnterpriseManager:
         return cif[8] == str(control_num) or cif[8] == letter_map[control_num]
 
     def register_project(self, company_cif: str, project_achronym: str,
+                         # pylint: disable=too-many-arguments, too-many-positional-arguments, too-many-branches
                          project_description: str, department: str,
                          date: str, budget: float):
         """Registers a new project"""
