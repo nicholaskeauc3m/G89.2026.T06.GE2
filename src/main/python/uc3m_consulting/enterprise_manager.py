@@ -1,10 +1,12 @@
 """Module """
+import hashlib
 import json
 import os
 import re
 from datetime import datetime
 from uc3m_consulting.enterprise_management_exception import EnterpriseManagementException
 from uc3m_consulting.enterprise_project import EnterpriseProject
+from uc3m_consulting.project_document import ProjectDocument
 
 
 class EnterpriseManager:
@@ -36,29 +38,20 @@ class EnterpriseManager:
                          project_description: str, department: str,
                          date: str, budget: float):
         """Registers a new project"""
-        # Validate CIF
         if not self.validate_cif(company_cif):
             raise EnterpriseManagementException("Invalid Company CIF")
-
-        # Validate acronym
         if not isinstance(project_achronym, str):
             raise EnterpriseManagementException("Invalid Project Acronym")
         if not (5 <= len(project_achronym) <= 10):
             raise EnterpriseManagementException("Invalid Project Acronym")
         if not re.match(r'^[A-Z0-9]+$', project_achronym):
             raise EnterpriseManagementException("Invalid Project Acronym")
-
-        # Validate description
         if not isinstance(project_description, str):
             raise EnterpriseManagementException("Invalid Project Description")
         if not (10 <= len(project_description) <= 30):
             raise EnterpriseManagementException("Invalid Project Description")
-
-        # Validate department
         if department not in ("HR", "FINANCE", "LEGAL", "LOGISTICS"):
             raise EnterpriseManagementException("Invalid Department")
-
-        # Validate date
         if not re.match(r'^\d{2}/\d{2}/\d{4}$', date):
             raise EnterpriseManagementException("Invalid Date")
         try:
@@ -69,16 +62,12 @@ class EnterpriseManager:
             raise EnterpriseManagementException("Invalid Date")
         if date_obj.date() < datetime.now().date():
             raise EnterpriseManagementException("Invalid Date")
-
-        # Validate budget
         if not isinstance(budget, float):
             raise EnterpriseManagementException("Invalid Budget")
         if round(budget * 100) != budget * 100:
             raise EnterpriseManagementException("Invalid Budget")
         if not (50000.00 <= budget <= 1000000.00):
             raise EnterpriseManagementException("Invalid Budget")
-
-        # Check for duplicate
         json_file = "corporate_operations.json"
         if os.path.exists(json_file):
             with open(json_file, "r", encoding="utf-8") as f:
@@ -89,13 +78,69 @@ class EnterpriseManager:
                     raise EnterpriseManagementException("Duplicate project")
         else:
             data = []
-
-        # Create and save project
         project = EnterpriseProject(company_cif, project_achronym,
                                     project_description, department,
                                     date, budget)
         data.append(project.to_json())
         with open(json_file, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
-
         return project.project_id
+
+    def register_document(self, input_file: str):
+        """Registers a document for a project"""
+        # Load and parse file
+        if not os.path.exists(input_file):
+            raise EnterpriseManagementException("Input file not found")
+        try:
+            with open(input_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except json.JSONDecodeError as exc:
+            raise EnterpriseManagementException("File is not valid JSON") from exc
+
+        # Validate structure — must have exactly 2 keys: PROJECT_ID and FILENAME
+        if not isinstance(data, dict):
+            raise EnterpriseManagementException("JSON does not have expected structure")
+        if set(data.keys()) != {"PROJECT_ID", "FILENAME"}:
+            raise EnterpriseManagementException("JSON does not have expected structure")
+
+        project_id = data["PROJECT_ID"]
+        filename = data["FILENAME"]
+
+        # Validate PROJECT_ID
+        if not isinstance(project_id, str) or not re.match(r'^[0-9a-fA-F]{32}$', project_id):
+            raise EnterpriseManagementException("Invalid PROJECT_ID")
+
+        # Validate PROJECT_ID exists in corporate_operations.json
+        corp_file = "corporate_operations.json"
+        if not os.path.exists(corp_file):
+            raise EnterpriseManagementException("PROJECT_ID not registered")
+        with open(corp_file, "r", encoding="utf-8") as f:
+            projects = json.load(f)
+        registered_ids = [p["project_id"] for p in projects]
+        if project_id.lower() not in [pid.lower() for pid in registered_ids]:
+            raise EnterpriseManagementException("PROJECT_ID not registered")
+
+        # Validate FILENAME
+        if not isinstance(filename, str):
+            raise EnterpriseManagementException("Invalid FILENAME")
+        if not re.match(r'^[a-zA-Z0-9]{8}\.(pdf|docx|xlsx)$', filename):
+            raise EnterpriseManagementException("Invalid FILENAME")
+
+        # Create document and compute signature
+        try:
+            doc = ProjectDocument(project_id, filename)
+        except Exception as exc:
+            raise EnterpriseManagementException("Internal processing error") from exc
+
+        # Save to all_documents.json
+        docs_file = "all_documents.json"
+        if os.path.exists(docs_file):
+            with open(docs_file, "r", encoding="utf-8") as f:
+                docs = json.load(f)
+        else:
+            docs = []
+        docs.append(doc.to_json())
+        with open(docs_file, "w", encoding="utf-8") as f:
+            json.dump(docs, f, indent=2)
+
+        return doc.document_signature
