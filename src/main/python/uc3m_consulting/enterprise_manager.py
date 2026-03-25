@@ -1,5 +1,4 @@
 """Module """
-import json
 import re
 from datetime import datetime
 from uc3m_consulting.enterprise_management_exception import EnterpriseManagementException
@@ -46,6 +45,37 @@ class EnterpriseManager:
             raise EnterpriseManagementException("Invalid Project Acronym")
         if not re.match(r'^[A-Z0-9]+$', project_achronym):
             raise EnterpriseManagementException("Invalid Project Acronym")
+
+        # Validate description
+        if not isinstance(project_description, str):
+            raise EnterpriseManagementException("Invalid Project Description")
+        if not (10 <= len(project_description) <= 30):
+            raise EnterpriseManagementException("Invalid Project Description")
+
+        # Validate department
+        if department not in ("HR", "FINANCE", "LEGAL", "LOGISTICS"):
+            raise EnterpriseManagementException("Invalid Department")
+
+        # Validate date
+        if not re.match(r'^\d{2}/\d{2}/\d{4}$', date):
+            raise EnterpriseManagementException("Invalid Date")
+        try:
+            date_obj = datetime.strptime(date, "%d/%m/%Y")
+        except ValueError as exc:
+            raise EnterpriseManagementException("Invalid Date") from exc
+        if not (2025 <= date_obj.year <= 2027):
+            raise EnterpriseManagementException("Invalid Date")
+        if date_obj.date() < datetime.now().date():
+            raise EnterpriseManagementException("Invalid Date")
+
+        # Validate budget
+        if not isinstance(budget, float):
+            raise EnterpriseManagementException("Invalid Budget")
+        budget_str = str(budget)
+        if round(budget * 100) != budget * 100:
+            raise EnterpriseManagementException("Invalid Budget")
+        if not (50000.00 <= budget <= 1000000.00):
+            raise EnterpriseManagementException("Invalid Budget")
 
         project = EnterpriseProject(company_cif, project_achronym,
                                     project_description, department,
