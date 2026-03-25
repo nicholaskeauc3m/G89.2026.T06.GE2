@@ -42,13 +42,13 @@ class EnterpriseManager:
             raise EnterpriseManagementException("Invalid Company CIF")
         if not isinstance(project_achronym, str):
             raise EnterpriseManagementException("Invalid Project Acronym")
-        if not (5 <= len(project_achronym) <= 10):
+        if not 5 <= len(project_achronym) <= 10:
             raise EnterpriseManagementException("Invalid Project Acronym")
         if not re.match(r'^[A-Z0-9]+$', project_achronym):
             raise EnterpriseManagementException("Invalid Project Acronym")
         if not isinstance(project_description, str):
             raise EnterpriseManagementException("Invalid Project Description")
-        if not (10 <= len(project_description) <= 30):
+        if not 10 <= len(project_description) <= 30:
             raise EnterpriseManagementException("Invalid Project Description")
         if department not in ("HR", "FINANCE", "LEGAL", "LOGISTICS"):
             raise EnterpriseManagementException("Invalid Department")
@@ -58,7 +58,7 @@ class EnterpriseManager:
             date_obj = datetime.strptime(date, "%d/%m/%Y")
         except ValueError as exc:
             raise EnterpriseManagementException("Invalid Date") from exc
-        if not (2025 <= date_obj.year <= 2027):
+        if not 2025 <= date_obj.year <= 2027:
             raise EnterpriseManagementException("Invalid Date")
         if date_obj.date() < datetime.now().date():
             raise EnterpriseManagementException("Invalid Date")
@@ -66,7 +66,7 @@ class EnterpriseManager:
             raise EnterpriseManagementException("Invalid Budget")
         if round(budget * 100) != budget * 100:
             raise EnterpriseManagementException("Invalid Budget")
-        if not (50000.00 <= budget <= 1000000.00):
+        if not 50000.00 <= budget <= 1000000.00:
             raise EnterpriseManagementException("Invalid Budget")
         json_file = "corporate_operations.json"
         if os.path.exists(json_file):
