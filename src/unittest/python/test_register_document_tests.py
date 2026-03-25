@@ -6,7 +6,7 @@ from uc3m_consulting import EnterpriseManager
 from uc3m_consulting.enterprise_management_exception import EnterpriseManagementException
 
 
-class TestRegisterDocument(unittest.TestCase):
+class TestRegisterDocument(unittest.TestCase): # pylint: disable=too-many-public-methods
     """Test cases for register_document - Syntactic Analysis"""
 
     def setUp(self):
@@ -402,7 +402,8 @@ class TestRegisterDocument(unittest.TestCase):
     # TC_M2_31 - Node 6: Valid format PROJECT_ID not in corporate_operations.json
     # ------------------------------------------------------------------
     def test_tc_m2_31_project_id_not_registered(self):
-        """TC_M2_31 - Valid format PROJECT_ID not in corporate_operations.json should raise exception"""
+        """TC_M2_31 - Valid format PROJECT_ID not in corporate_operations.json
+        should raise exception"""
         self.write_json_dict({
             "PROJECT_ID": "ffffffffffffffffffffffffffffffff",
             "FILENAME": "abcd1234.pdf"
