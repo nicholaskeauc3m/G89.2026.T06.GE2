@@ -1,4 +1,5 @@
 """class for testing the register_project method"""
+import os
 import unittest
 from uc3m_consulting import EnterpriseManager
 from uc3m_consulting.enterprise_management_exception import EnterpriseManagementException
@@ -16,6 +17,8 @@ class TestRegisterProject(unittest.TestCase):
         self.valid_department = "HR"
         self.valid_date = "01/06/2026"
         self.valid_budget = 50000.00
+        if os.path.exists("corporate_operations.json"):
+            os.remove("corporate_operations.json")
 
     def test_tc01_valid_all_inputs(self):
         """TC_01 - All valid inputs should return a 32-char MD5 string"""

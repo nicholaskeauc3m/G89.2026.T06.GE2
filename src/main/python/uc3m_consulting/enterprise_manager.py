@@ -1,4 +1,6 @@
 """Module """
+import json
+import os
 import re
 from datetime import datetime
 from uc3m_consulting.enterprise_management_exception import EnterpriseManagementException
@@ -71,13 +73,29 @@ class EnterpriseManager:
         # Validate budget
         if not isinstance(budget, float):
             raise EnterpriseManagementException("Invalid Budget")
-        budget_str = str(budget)
         if round(budget * 100) != budget * 100:
             raise EnterpriseManagementException("Invalid Budget")
         if not (50000.00 <= budget <= 1000000.00):
             raise EnterpriseManagementException("Invalid Budget")
 
+        # Check for duplicate
+        json_file = "corporate_operations.json"
+        if os.path.exists(json_file):
+            with open(json_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            for entry in data:
+                if entry["company_cif"] == company_cif and \
+                        entry["project_acronym"] == project_achronym:
+                    raise EnterpriseManagementException("Duplicate project")
+        else:
+            data = []
+
+        # Create and save project
         project = EnterpriseProject(company_cif, project_achronym,
                                     project_description, department,
                                     date, budget)
+        data.append(project.to_json())
+        with open(json_file, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+
         return project.project_id
