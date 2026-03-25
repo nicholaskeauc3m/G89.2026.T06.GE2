@@ -5,7 +5,7 @@ from uc3m_consulting import EnterpriseManager
 from uc3m_consulting.enterprise_management_exception import EnterpriseManagementException
 
 
-class TestRegisterProject(unittest.TestCase):
+class TestRegisterProject(unittest.TestCase): # pylint: disable=too-many-public-methods
     """Test cases for register_project - Equivalence Classes & Boundary Values"""
 
     def setUp(self):

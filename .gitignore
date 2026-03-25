@@ -6,3 +6,5 @@ target
 __pycache__/
 *.pyc
 *.pyo
+corporate_operations.json
+all_documents.json
