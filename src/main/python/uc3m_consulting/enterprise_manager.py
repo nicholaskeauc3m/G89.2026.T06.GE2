@@ -32,53 +32,41 @@ class EnterpriseManager:
         letter_map = "JABCDEFGHI"
         return cif[8] == str(control_num) or cif[8] == letter_map[control_num]
 
+    # pylint: disable=too-many-arguments, too-many-positional-arguments, too-many-branches
     def register_project(self, company_cif: str, project_achronym: str,
                          project_description: str, department: str,
                          date: str, budget: float):
         """Registers a new project"""
-        # Validate CIF
         if not self.validate_cif(company_cif):
             raise EnterpriseManagementException("Invalid Company CIF")
-
-        # Validate acronym
         if not isinstance(project_achronym, str):
             raise EnterpriseManagementException("Invalid Project Acronym")
-        if not (5 <= len(project_achronym) <= 10):
+        if not 5 <= len(project_achronym) <= 10:
             raise EnterpriseManagementException("Invalid Project Acronym")
         if not re.match(r'^[A-Z0-9]+$', project_achronym):
             raise EnterpriseManagementException("Invalid Project Acronym")
-
-        # Validate description
         if not isinstance(project_description, str):
             raise EnterpriseManagementException("Invalid Project Description")
-        if not (10 <= len(project_description) <= 30):
+        if not 10 <= len(project_description) <= 30:
             raise EnterpriseManagementException("Invalid Project Description")
-
-        # Validate department
         if department not in ("HR", "FINANCE", "LEGAL", "LOGISTICS"):
             raise EnterpriseManagementException("Invalid Department")
-
-        # Validate date
         if not re.match(r'^\d{2}/\d{2}/\d{4}$', date):
             raise EnterpriseManagementException("Invalid Date")
         try:
             date_obj = datetime.strptime(date, "%d/%m/%Y")
         except ValueError as exc:
             raise EnterpriseManagementException("Invalid Date") from exc
-        if not (2025 <= date_obj.year <= 2027):
+        if not 2025 <= date_obj.year <= 2027:
             raise EnterpriseManagementException("Invalid Date")
         if date_obj.date() < datetime.now().date():
             raise EnterpriseManagementException("Invalid Date")
-
-        # Validate budget
         if not isinstance(budget, float):
             raise EnterpriseManagementException("Invalid Budget")
         if round(budget * 100) != budget * 100:
             raise EnterpriseManagementException("Invalid Budget")
-        if not (50000.00 <= budget <= 1000000.00):
+        if not 50000.00 <= budget <= 1000000.00:
             raise EnterpriseManagementException("Invalid Budget")
-
-        # Check for duplicate
         json_file = "corporate_operations.json"
         if os.path.exists(json_file):
             with open(json_file, "r", encoding="utf-8") as f:
@@ -89,13 +77,10 @@ class EnterpriseManager:
                     raise EnterpriseManagementException("Duplicate project")
         else:
             data = []
-
-        # Create and save project
         project = EnterpriseProject(company_cif, project_achronym,
                                     project_description, department,
                                     date, budget)
         data.append(project.to_json())
         with open(json_file, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
-
         return project.project_id
